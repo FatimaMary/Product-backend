@@ -174,31 +174,24 @@ app.post("/newentry", (request, response) => {
     db.close();
 });
 
-app.get("/newentry/details/:CustomerPartNo", (request, response) => {
+app.get("/entry/customerPartNo", (request, response) => {
     let db = new sqlite3.Database("db/AddProduct.db");
 
-    const selectQuery = "SELECT Customer, CustomerPartNo, Description, Location, MinStock, MaxStock, PackingStandard FROM AutoParts WHERE CustomerPartNo = ?";
+    const selectQuery = "SELECT CustomerPartNo FROM AutoParts";
 
-    db.all(selectQuery, [request.params.CustomerPartNo], (err, rows) => {
+    db.all(selectQuery, [], (err, rows) => {
         if(err){
             response.json({
                 message: err.message,
             });
         } else {
-            const parts = rows.map((singlePart) => {
+            const customerPartArray = rows.map((singlePart) => {
                 return{
-                    Id: singlePart.Id,
-                    Customer: singlePart.Customer,
                     CustomerPartNo: singlePart.CustomerPartNo,
-                    Description: singlePart.Description,
-                    Location: singlePart.Location,
-                    MinStock: singlePart.MinStock,
-                    MaxStock: singlePart.MaxStock,
-                    PackingStandard: singlePart.PackingStandard
                 };
             });
-            response.json(parts[0]);
-            console.log("List of Auto Parts:" + JSON.stringify(parts));
+            response.json(customerPartArray);
+            console.log("Array of Customer Part number:" + JSON.stringify(customerPartArray));
         }
     });
     db.close();
@@ -222,16 +215,16 @@ app.get("/newentry/:id", (request, response) => {
                 }
             });
             response.json(partNo[0]);
-            console.log("Customer Part NO: " +JSON.stringify(partNo))
+            console.log("Customer Part NO get using id: " +JSON.stringify(partNo))
         }
     });
     db.close();
 });
 
-app.get("/newentry", (request, response) => {
+app.get("/entry", (request, response) => {
     let db = new sqlite3.Database("db/AddProduct.db");
 
-    const selectQuery = "SELECT CustomerPartNo FROM AutoParts";
+    const selectQuery = "SELECT Id, Customer, CustomerPartNo, Description, Location, PackingStandard FROM AutoParts";
 
     db.all(selectQuery, [], (err, rows) => {
         if(err) {
@@ -239,48 +232,31 @@ app.get("/newentry", (request, response) => {
                 message: err.message,
             });
         } else {
-            const partNo = rows.map((singlePart) => {
+            const partArray = rows.map((singlePart) => {
                 return{
                     Id: singlePart.Id,
+                    Customer: singlePart.Customer,
                     CustomerPartNo: singlePart.CustomerPartNo,
+                    Description: singlePart.Description,
+                    Location: singlePart.Location,
+                    PackingStandard: singlePart.PackingStandard
                 }
             });
-            response.json(partNo);
-            console.log("Single Customer Part NO: " +JSON.stringify(partNo))
-            // const partNo = CustomerPartNo;
-            // const selectQuery = "SELECT Description, Customer, Location, PackingStandard FROM AutoParts WHERE CustomerPartNo = ?";
-            // const values = [CustomerPartNo];
-            // db.all(selectQuery, values, (err, rows) => {
-            //     if(err) {
-            //         response.json({
-            //             message:err.message,
-            //         });
-            //     } else {
-            //         const customerDetails = rows.map((singleData) => {
-            //             return{
-            //                 Description: singleData.Description,
-            //                 Customer: singleData.Customer,
-            //                 Location: singleData.Location,
-            //                 PackingStandard: singleData.PackingStandard
-            //             }
-            //         });
-            //         response.json(customerDetails);
-            //         console.log("Customer Details: " + customerDetails)
-            //     }
-            // })
+            console.log("Customer Part NO Array: " +JSON.stringify(partArray))
+            response.json(partArray);
         }
     });
     db.close();
 });
 
-app.post("/checkin", (request, response) => {
+app.post("/activity", (request, response) => {
     const newActivity = request.body;
 
     let db = new sqlite3.Database("db/AddProduct.db");
-    const insertQuery = "INSERT INTO ActivityTable(CustomerPartNo, Activity, BinCount, Location, StockId) VALUES(?, ?, ?, ?, ?)";
+    const insertQuery = "INSERT INTO ActivityTable(CustomerPartNo, Action, BinCount, Location, StockId) VALUES(?, ?, ?, ?, ?)";
     const values = [
         newActivity.CustomerPartNo,
-        newActivity.Activity,
+        newActivity.Action,
         newActivity.BinCount,
         newActivity.Location,
         newActivity.StockId
@@ -303,7 +279,7 @@ app.post("/checkin", (request, response) => {
 app.get("/checkin", (request, response) => {
     let db = new sqlite3.Database("db/AddProduct.db");
 
-    const selectQuery = "SELECT ActivityId, CustomerPartNo, Activity, BinCount, Location, StockId FROM ActivityTable";
+    const selectQuery = "SELECT ActivityId, CustomerPartNo, Action, BinCount, Location, StockId FROM ActivityTable";
 
     db.all(selectQuery, [], (err, rows) => {
         if(err){
@@ -315,7 +291,7 @@ app.get("/checkin", (request, response) => {
                 return{
                     ActivityId: singledata.ActivityId,
                     CustomerPartNo: singledata.CustomerPartNo,
-                    Activity: singledata.Activity,
+                    Activity: singledata.Action,
                     BinCount: singledata.BinCount,
                     Location: singledata.Location,
                     StockId: singledata.StockId,
